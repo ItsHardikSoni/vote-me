@@ -2,32 +2,58 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Ionicons } from '@expo/vector-icons';
+
+// Correctly typed the name prop to ensure it's a valid Ionicons name.
+function TabBarIcon({ name, color }: { name: React.ComponentProps<typeof Ionicons>['name']; color: string }) {
+  return <IconSymbol name={name} size={22} color={color} style={{ marginBottom: -3 }} />;
+}
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const { colorScheme } = useColorScheme();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: colorScheme === 'dark' ? '#fff' : '#000',
         headerShown: false,
-        tabBarButton: HapticTab,
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          // Used a valid solid-style icon name.
+          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+          tabBarButton: (props) => <HapticTab {...props} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="vote"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Vote',
+          // Replaced with a valid checkbox icon.
+          tabBarIcon: ({ color }) => <TabBarIcon name="checkbox-outline" color={color} />,
+          tabBarButton: (props) => <HapticTab {...props} />,
+        }}
+      />
+      <Tabs.Screen
+        name="result"
+        options={{
+          title: 'Result',
+          // Replaced with a valid podium icon.
+          tabBarIcon: ({ color }) => <TabBarIcon name="podium-outline" color={color} />,
+          tabBarButton: (props) => <HapticTab {...props} />,
+        }}
+      />
+      <Tabs.Screen
+        name="account"
+        options={{
+          title: 'Account',
+          // Used a valid person outline icon.
+          tabBarIcon: ({ color }) => <TabBarIcon name="person-outline" color={color} />,
+          tabBarButton: (props) => <HapticTab {...props} />,
         }}
       />
     </Tabs>
