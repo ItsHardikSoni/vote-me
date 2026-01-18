@@ -6,6 +6,7 @@ import { Colors } from '@/constants/theme';
 import { states } from '@/constants/states';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useRouter } from 'expo-router';
 
 export default function SignupScreen() {
   const [fullName, setFullName] = useState('');
@@ -45,6 +46,7 @@ export default function SignupScreen() {
   const [date, setDate] = useState(new Date());
 
   const genders = ['Male', 'Female', 'Other'];
+  const router = useRouter();
 
   useEffect(() => {
     // Validation logic
@@ -139,11 +141,23 @@ export default function SignupScreen() {
     setShowDatePicker(Platform.OS === 'ios');
     setDate(currentDate);
     setDob(currentDate.toISOString().split('T')[0]);
+
+    // Calculate age
+    const today = new Date();
+    const birthDate = new Date(currentDate);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    setAge(age.toString());
   };
 
   const handleRegister = () => {
     if (isFormValid) {
-      Alert.alert('Success', 'You have successfully registered!');
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      console.log('Your OTP is: ', otp);
+      router.push({ pathname: '/otp', params: { otp } });
     } else {
       Alert.alert('Error', 'Please fill in all required fields correctly.');
     }
@@ -190,11 +204,6 @@ export default function SignupScreen() {
               {aadharError ? <Text style={styles.errorText}>{aadharError}</Text> : null}
             </View>
             <View style={styles.inputGroup}>
-              <ThemedText style={styles.label}>Age <Text style={styles.required}>*</Text></ThemedText>
-              <TextInput style={styles.input} placeholder="Enter your age" value={age} onChangeText={setAge} keyboardType="numeric" />
-              {ageError ? <Text style={styles.errorText}>{ageError}</Text> : null}
-            </View>
-            <View style={styles.inputGroup}>
               <ThemedText style={styles.label}>Date of Birth <Text style={styles.required}>*</Text></ThemedText>
               <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
                 <Text style={{ color: dob ? '#000' : '#999' }}>{dob || 'Select Date of Birth'}</Text>
@@ -208,6 +217,11 @@ export default function SignupScreen() {
                   onChange={onDateChange}
                 />
               )}
+            </View>
+            <View style={styles.inputGroup}>
+              <ThemedText style={styles.label}>Age <Text style={styles.required}>*</Text></ThemedText>
+              <TextInput style={[styles.input, {backgroundColor: '#E0E4E8'}]} placeholder="Your age will be calculated" value={age} editable={false} />
+              {ageError ? <Text style={styles.errorText}>{ageError}</Text> : null}
             </View>
             <View style={styles.inputGroup}>
               <ThemedText style={styles.label}>Father's Name <Text style={styles.required}>*</Text></ThemedText>

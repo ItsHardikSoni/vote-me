@@ -105,7 +105,7 @@ export default function HomeScreen() {
       keyExtractor={item => item.id}
       renderItem={({ item }) => (
         <View style={styles.upcomingCard}>
-          <View>
+          <View style={styles.upcomingTitleContainer}>
             <ThemedText style={styles.upcomingTitle}>{item.name}</ThemedText>
             <View style={styles.dateContainer}>
               <Ionicons name="calendar-outline" size={16} color={Colors.light.icon} />
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   profileIcon: { width: 50, height: 50, borderRadius: 25 },
   liveCard: { backgroundColor: '#E8F5E9', borderRadius: 20, padding: 20, marginHorizontal: 20, marginBottom: 20 },
   liveHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
-  liveTitle: { fontSize: 16, fontWeight: 'bold', color: Colors.light.text, marginLeft: 8 },
+  liveTitle: { fontSize: 16, fontWeight: 'bold', color: Colors.light.text, marginLeft: 8, flexShrink: 1 },
   liveBadge: { backgroundColor: '#C8E6C9', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4, marginLeft: 'auto' },
   liveBadgeText: { color: '#2E7D32', fontSize: 12, fontWeight: 'bold' },
   voteCountContainer: { backgroundColor: '#fff', borderRadius: 15, padding: 15, marginBottom: 15 },
@@ -147,8 +147,8 @@ const styles = StyleSheet.create({
   updateInfo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#E3F2FD', borderRadius: 10, padding: 10 },
   updateText: { fontSize: 12, color: Colors.light.primary, marginLeft: 8 },
   electionCard: { backgroundColor: '#fff', borderRadius: 20, padding: 20, marginHorizontal: 20, marginBottom: 20 },
-  electionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
-  electionTitle: { fontSize: 18, fontWeight: 'bold', color: Colors.light.text },
+  electionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
+  electionTitle: { fontSize: 18, fontWeight: 'bold', color: Colors.light.text, flex: 1, marginRight: 10 },
   locationContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
   locationText: { fontSize: 14, color: Colors.light.icon, marginLeft: 8 },
   countdownLabel: { fontSize: 14, color: Colors.light.icon, marginBottom: 10, textAlign: 'center' },
@@ -159,7 +159,8 @@ const styles = StyleSheet.create({
   voteButton: { backgroundColor: Colors.light.primary, borderRadius: 15, paddingVertical: 15, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
   voteButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold', marginRight: 8 },
   sectionTitle: { fontSize: 20, fontWeight: 'bold', color: Colors.light.text, marginHorizontal: 20, marginBottom: 15 },
-  upcomingCard: { backgroundColor: '#fff', borderRadius: 15, padding: 20, marginHorizontal: 20, marginBottom: 15, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  upcomingCard: { backgroundColor: '#fff', borderRadius: 15, padding: 20, marginHorizontal: 20, marginBottom: 15, flexDirection: 'row', alignItems: 'center' },
+  upcomingTitleContainer: { flex: 1, marginRight: 10 },
   upcomingTitle: { fontSize: 16, fontWeight: 'bold', color: Colors.light.text },
   dateContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
   upcomingDate: { fontSize: 14, color: Colors.light.icon, marginLeft: 8 },

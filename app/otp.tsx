@@ -1,14 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, Text, Alert } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
-import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 export default function OTPVerificationScreen() {
   const [otp, setOtp] = useState(new Array(6).fill(''));
   const [timer, setTimer] = useState(30);
   const [resendEnabled, setResendEnabled] = useState(false);
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const [verificationOtp, setVerificationOtp] = useState(params.otp);
+
+  const inputRefs = useRef<Array<TextInput | null>>([]);
+
+  useEffect(() => {
+    if (verificationOtp) {
+      console.log(`Your OTP is: ${verificationOtp}`);
+    }
+  }, [verificationOtp]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -28,22 +39,35 @@ export default function OTPVerificationScreen() {
     const newOtp = [...otp];
     newOtp[index] = text;
     setOtp(newOtp);
+
+    if (text.length === 1 && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    } else if (text.length === 0 && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
   };
 
   const handleVerify = () => {
     const enteredOtp = otp.join('');
-    if (enteredOtp.length === 6) {
-      // Replace with your OTP verification logic
+    if (enteredOtp === verificationOtp) {
       Alert.alert('Success', 'OTP Verified Successfully');
+      router.push('/(tabs)');
     } else {
-      Alert.alert('Error', 'Please enter a valid 6-digit OTP');
+      Alert.alert('Error', 'Invalid OTP. Please try again.');
     }
   };
 
   const handleResend = () => {
     setResendEnabled(false);
     setTimer(30);
-    // Resend OTP logic here
+    const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    setVerificationOtp(newOtp);
+    setOtp(new Array(6).fill(''));
+    inputRefs.current[0]?.focus();
+  };
+
+  const setInputRef = (index: number) => (ref: TextInput | null) => {
+    inputRefs.current[index] = ref;
   };
 
   return (
@@ -54,6 +78,7 @@ export default function OTPVerificationScreen() {
         {otp.map((digit, index) => (
           <TextInput
             key={index}
+            ref={setInputRef(index)}
             style={styles.otpInput}
             value={digit}
             onChangeText={(text) => handleOtpChange(text, index)}

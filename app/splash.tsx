@@ -30,7 +30,7 @@ export default function SplashScreenComponent() {
         <View style={styles.logoContainer}>
           <Ionicons name="checkmark" size={80} color="white" />
         </View>
-        <Text style={styles.logoText}>SecureVote</Text>
+        <Text style={styles.logoText}>Vote Me</Text>
         <Text style={styles.tagline}>Your vote. Your voice.</Text>
       </View>
       <LinearGradient
