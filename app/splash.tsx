@@ -11,17 +11,17 @@ export default function SplashScreenComponent() {
   useEffect(() => {
     const timer = setTimeout(() => {
       router.replace('/login');
-    }, 5000);
+    }, 3000);
 
     return () => clearTimeout(timer);
-  }, [router]);
+  });
 
-  const onLayoutRootView = useCallback(async () => {
-    await SplashScreen.hideAsync();
-  }, []);
+  // const onLayoutRootView = useCallback(async () => {
+  //   await SplashScreen.hideAsync();
+  // }, []);
 
   return (
-    <View style={styles.container} onLayout={onLayoutRootView}>
+    <View style={styles.container}>
       <LinearGradient
         colors={['rgba(255, 153, 51, 0.2)', 'rgba(255, 255, 255, 0)']}
         style={styles.topGradient}

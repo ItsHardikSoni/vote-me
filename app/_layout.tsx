@@ -5,13 +5,24 @@ import 'react-native-reanimated';
 import { StatusBar } from 'expo-status-bar';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import React from 'react';
+import React, { useEffect } from 'react';
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
+// ✅ prevent auto hide ONCE
 SplashScreen.preventAutoHideAsync();
+
 
 export default function RootLayout() {
   const { colorScheme, isDarkColorScheme } = useColorScheme();
+
+  useEffect(() => {
+    const hideSplash = async () => {
+      // allow first frame to paint (important for iOS)
+      await new Promise(resolve => setTimeout(resolve, 200));
+      await SplashScreen.hideAsync();
+    };
+
+    hideSplash();
+  }, []);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
