@@ -225,7 +225,7 @@ export default function SignupScreen() {
             </View>
             <View style={styles.inputGroup}>
               <ThemedText style={styles.label}>Father's Name <Text style={styles.required}>*</Text></ThemedText>
-              <TextInput style={styles.input} placeholder="Enter your father's name" value={fatherName} onChangeText={setFatherName} />
+              <TextInput style={styles.input} placeholder="Enter your father&apos;s name" value={fatherName} onChangeText={setFatherName} />
             </View>
             <View style={styles.inputGroup}>
               <ThemedText style={styles.label}>Gender <Text style={styles.required}>*</Text></ThemedText>
@@ -394,10 +394,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 20,
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
+    boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
     elevation: 3,
   },
   cardTitle: {

@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   disabledButton: { backgroundColor: '#B0C4DE' },
   submitButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   successContainer: { flex: 1, backgroundColor: '#F0F4F8', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  successCard: { backgroundColor: '#fff', borderRadius: 20, padding: 30, alignItems: 'center', width: '100%', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 5 },
+  successCard: { backgroundColor: '#fff', borderRadius: 20, padding: 30, alignItems: 'center', width: '100%', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', elevation: 5 },
   successTitle: { fontSize: 24, fontWeight: 'bold', color: Colors.light.text, marginVertical: 15 },
   successMessage: { fontSize: 16, color: Colors.light.icon, textAlign: 'center', marginBottom: 20 },
   voterInfo: { backgroundColor: '#E8F5E9', borderRadius: 10, padding: 15, marginBottom: 20, width: '100%' },
