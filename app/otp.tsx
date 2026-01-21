@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, Text, Alert } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function OTPVerificationScreen() {
   const [otp, setOtp] = useState(new Array(6).fill(''));
@@ -13,7 +13,7 @@ export default function OTPVerificationScreen() {
   const params = useLocalSearchParams();
   const [verificationOtp, setVerificationOtp] = useState(params.otp);
 
-  const inputRefs = useRef<Array<TextInput | null>>([]);
+  const inputRefs = useRef<(TextInput | null)[]>([]);
 
   useEffect(() => {
     if (verificationOtp) {
@@ -51,7 +51,16 @@ export default function OTPVerificationScreen() {
     const enteredOtp = otp.join('');
     if (enteredOtp === verificationOtp) {
       Alert.alert('Success', 'OTP Verified Successfully');
-      router.push('/(tabs)');
+
+      // Check if this is for password reset
+      if (params.purpose === 'password_reset') {
+        router.push({
+          pathname: '/reset-password',
+          params: { phone: params.phone }
+        });
+      } else {
+        router.push('/(tabs)');
+      }
     } else {
       Alert.alert('Error', 'Invalid OTP. Please try again.');
     }
@@ -71,9 +80,21 @@ export default function OTPVerificationScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText style={styles.title}>OTP Verification</ThemedText>
-      <ThemedText style={styles.subtitle}>Enter the 6-digit code sent to your registered mobile number.</ThemedText>
+    <LinearGradient
+      colors={['#E3F2FD', '#F3E5F5', '#FFF3E0', '#F1F8E9']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.container}
+    >
+      <ThemedText style={styles.title}>
+        {params.purpose === 'password_reset' ? 'Reset Password' : 'OTP Verification'}
+      </ThemedText>
+      <ThemedText style={styles.subtitle}>
+        {params.purpose === 'password_reset'
+          ? 'Enter the 6-digit code sent to your phone to reset your password.'
+          : 'Enter the 6-digit code sent to your registered mobile number.'
+        }
+      </ThemedText>
       <View style={styles.otpContainer}>
         {otp.map((digit, index) => (
           <TextInput
@@ -100,7 +121,7 @@ export default function OTPVerificationScreen() {
           </TouchableOpacity>
         )}
       </View>
-    </ThemedView>
+    </LinearGradient>
   );
 }
 
@@ -109,7 +130,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#F7F9FC',
   },
   title: {
     fontSize: 28,

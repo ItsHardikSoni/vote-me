@@ -1,12 +1,36 @@
 
 import React from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
+import { useRouter } from 'expo-router';
 
 export default function AccountScreen() {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: () => {
+            // Navigate to login screen
+            router.replace('/login');
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <ScrollView style={styles.container}>
       <ThemedView style={styles.header}>
@@ -37,7 +61,7 @@ export default function AccountScreen() {
           <ThemedText style={styles.infoValue}>Shubham Sharma</ThemedText>
         </View>
         <View style={styles.infoRow}>
-          <ThemedText style={styles.infoLabel}>Father's Name</ThemedText>
+          <ThemedText style={styles.infoLabel}>Father&apos;s Name</ThemedText>
           <ThemedText style={styles.infoValue}>Rajesh Sharma</ThemedText>
         </View>
         <View style={styles.infoRow}>
@@ -71,6 +95,13 @@ export default function AccountScreen() {
           <ThemedText style={styles.infoLabel}>Address</ThemedText>
           <ThemedText style={styles.infoValue}>Flat 201 Shanti Nagar</ThemedText>
         </View>
+      </View>
+
+      <View style={styles.logoutContainer}>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <IconSymbol name="log-out-outline" size={20} color="#fff" />
+          <ThemedText style={styles.logoutButtonText}>Logout</ThemedText>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -147,5 +178,23 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: 16,
     fontWeight: '500',
+  },
+  logoutContainer: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  logoutButton: {
+    backgroundColor: '#FF3B30',
+    borderRadius: 10,
+    padding: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { StyleSheet, View, Text, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as SplashScreen from 'expo-splash-screen';
 
 export default function SplashScreenComponent() {
   const router = useRouter();
+  const tapAnimation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -15,6 +15,29 @@ export default function SplashScreenComponent() {
 
     return () => clearTimeout(timer);
   });
+
+  useEffect(() => {
+    // Create tapping animation - finger moves down to press button
+    const animate = () => {
+      Animated.sequence([
+        Animated.timing(tapAnimation, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(tapAnimation, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        // Repeat animation after a delay
+        setTimeout(animate, 1500);
+      });
+    };
+
+    animate();
+  }, [tapAnimation]);
 
   // const onLayoutRootView = useCallback(async () => {
   //   await SplashScreen.hideAsync();
@@ -28,7 +51,49 @@ export default function SplashScreenComponent() {
       />
       <View style={styles.content}>
         <View style={styles.logoContainer}>
-          <Ionicons name="checkmark" size={80} color="white" />
+          {/* Finger */}
+          <Animated.View
+            style={[
+              styles.fingerContainer,
+              {
+                transform: [
+                  {
+                    translateY: tapAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, 80], // Move finger down to press button
+                    }),
+                  },
+                  {
+                    rotate: tapAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0deg', '5deg'], // Slight rotation for natural tap
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            <Ionicons name="hand-right" size={60} color="#333" />
+          </Animated.View>
+
+          {/* Red Vote Button */}
+          <Animated.View
+            style={[
+              styles.voteButton,
+              {
+                transform: [
+                  {
+                    scale: tapAnimation.interpolate({
+                      inputRange: [0, 0.5, 1],
+                      outputRange: [1, 0.95, 1], // Button press effect
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            <Text style={styles.voteButtonText}>VOTE</Text>
+          </Animated.View>
         </View>
         <Text style={styles.logoText}>Vote Me</Text>
         <Text style={styles.tagline}>Your vote. Your voice.</Text>
@@ -66,18 +131,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoContainer: {
-    width: 140,
-    height: 140,
-    borderRadius: 35,
-    backgroundColor: '#007AFF',
+    width: 160,
+    height: 180,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 30,
+    position: 'relative',
+  },
+  fingerContainer: {
+    position: 'absolute',
+    top: 20, // Position finger above the button
+    zIndex: 2,
+  },
+  voteButton: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#FF3B30', // iOS red
+    justifyContent: 'center',
+    alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 8,
+    position: 'absolute',
+    bottom: 10, // Position button slightly up from bottom
+  },
+  voteButtonText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'white',
+    letterSpacing: 1,
   },
   logoText: {
     fontSize: 42,
