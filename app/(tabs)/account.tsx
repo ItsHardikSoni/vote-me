@@ -1,11 +1,12 @@
 
 import React from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function AccountScreen() {
   const router = useRouter();
@@ -33,73 +34,150 @@ export default function AccountScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText style={styles.title}>Voter Details</ThemedText>
-        <ThemedText style={styles.subtitle}>Your registered information</ThemedText>
-      </ThemedView>
-
-      <View style={styles.card}>
-        <View style={styles.voterCard}>
-          <View style={styles.avatar}>
-            <IconSymbol name="person-circle-outline" size={48} color={Colors.light.primary} />
+      {/* Header Section */}
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <View style={styles.headerIconContainer}>
+            <Ionicons name="person-circle-outline" size={28} color="#6366F1" />
           </View>
           <View>
-            <ThemedText style={styles.name}>Shubham Sharma</ThemedText>
-            <ThemedText style={styles.epic}>EPIC: jk</ThemedText>
-            <ThemedText style={styles.details}>Male  •  28 years</ThemedText>
+            <ThemedText style={styles.headerTitle}>My Account</ThemedText>
+            <ThemedText style={styles.headerSubtitle}>Voter Profile</ThemedText>
           </View>
         </View>
       </View>
 
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <IconSymbol name="person-outline" size={24} color={Colors.light.primary} />
-          <ThemedText style={styles.cardTitle}>Personal Information</ThemedText>
-        </View>
-        <View style={styles.infoRow}>
-          <ThemedText style={styles.infoLabel}>Full Name</ThemedText>
-          <ThemedText style={styles.infoValue}>Shubham Sharma</ThemedText>
-        </View>
-        <View style={styles.infoRow}>
-          <ThemedText style={styles.infoLabel}>Father&apos;s Name</ThemedText>
-          <ThemedText style={styles.infoValue}>Rajesh Sharma</ThemedText>
-        </View>
-        <View style={styles.infoRow}>
-          <ThemedText style={styles.infoLabel}>Age</ThemedText>
-          <ThemedText style={styles.infoValue}>28 years</ThemedText>
-        </View>
-        <View style={styles.infoRow}>
-          <ThemedText style={styles.infoLabel}>Gender</ThemedText>
-          <ThemedText style={styles.infoValue}>Male</ThemedText>
-        </View>
-      </View>
-
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <IconSymbol name="location-outline" size={24} color={Colors.light.primary} />
-          <ThemedText style={styles.cardTitle}>Location Details</ThemedText>
-        </View>
-        <View style={styles.infoRow}>
-          <ThemedText style={styles.infoLabel}>State</ThemedText>
-          <ThemedText style={styles.infoValue}>Maharashtra</ThemedText>
-        </View>
-        <View style={styles.infoRow}>
-          <ThemedText style={styles.infoLabel}>District</ThemedText>
-          <ThemedText style={styles.infoValue}>Mumbai</ThemedText>
-        </View>
-        <View style={styles.infoRow}>
-          <ThemedText style={styles.infoLabel}>Pincode</ThemedText>
-          <ThemedText style={styles.infoValue}>400001</ThemedText>
-        </View>
-        <View style={styles.infoRow}>
-          <ThemedText style={styles.infoLabel}>Address</ThemedText>
-          <ThemedText style={styles.infoValue}>Flat 201 Shanti Nagar</ThemedText>
+      {/* Profile Card */}
+      <View style={styles.profileCard}>
+        <View style={styles.profileHeader}>
+          <View style={styles.avatarContainer}>
+            <Image source={{ uri: 'https://i.pravatar.cc/150?u=shubham' }} style={styles.avatar} />
+            <View style={styles.verifiedBadge}>
+              <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+            </View>
+          </View>
+          <View style={styles.profileInfo}>
+            <ThemedText style={styles.name}>Shubham Sharma</ThemedText>
+            <View style={styles.epicContainer}>
+              <Ionicons name="card-outline" size={14} color="#6B7280" />
+              <ThemedText style={styles.epic}>EPIC: JK123456789</ThemedText>
+            </View>
+            <View style={styles.detailsContainer}>
+              <Ionicons name="male-female-outline" size={14} color="#6B7280" />
+              <ThemedText style={styles.details}>Male • 28 years</ThemedText>
+            </View>
+          </View>
         </View>
       </View>
 
-      <View style={styles.logoutContainer}>
+      {/* Personal Information */}
+      <View style={styles.infoSection}>
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionIconContainer}>
+            <Ionicons name="person-outline" size={20} color="#6366F1" />
+          </View>
+          <ThemedText style={styles.sectionTitle}>Personal Information</ThemedText>
+        </View>
+
+        <View style={styles.infoList}>
+          <View style={styles.infoItem}>
+            <View style={styles.infoIcon}>
+              <Ionicons name="person-outline" size={18} color="#6B7280" />
+            </View>
+            <View style={styles.infoContent}>
+              <ThemedText style={styles.infoLabel}>Full Name</ThemedText>
+              <ThemedText style={styles.infoValue}>Shubham Sharma</ThemedText>
+            </View>
+          </View>
+
+          <View style={styles.infoItem}>
+            <View style={styles.infoIcon}>
+              <Ionicons name="people-outline" size={18} color="#6B7280" />
+            </View>
+            <View style={styles.infoContent}>
+              <ThemedText style={styles.infoLabel}>Father&apos;s Name</ThemedText>
+              <ThemedText style={styles.infoValue}>Rajesh Sharma</ThemedText>
+            </View>
+          </View>
+
+          <View style={styles.infoItem}>
+            <View style={styles.infoIcon}>
+              <Ionicons name="calendar-outline" size={18} color="#6B7280" />
+            </View>
+            <View style={styles.infoContent}>
+              <ThemedText style={styles.infoLabel}>Age</ThemedText>
+              <ThemedText style={styles.infoValue}>28 years</ThemedText>
+            </View>
+          </View>
+
+          <View style={styles.infoItem}>
+            <View style={styles.infoIcon}>
+              <Ionicons name="male-female-outline" size={18} color="#6B7280" />
+            </View>
+            <View style={styles.infoContent}>
+              <ThemedText style={styles.infoLabel}>Gender</ThemedText>
+              <ThemedText style={styles.infoValue}>Male</ThemedText>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* Location Information */}
+      <View style={styles.locationSection}>
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionIconContainer}>
+            <Ionicons name="location-outline" size={20} color="#6366F1" />
+          </View>
+          <ThemedText style={styles.sectionTitle}>Location Details</ThemedText>
+        </View>
+
+        <View style={styles.infoList}>
+          <View style={styles.infoItem}>
+            <View style={styles.infoIcon}>
+              <Ionicons name="business-outline" size={18} color="#6B7280" />
+            </View>
+            <View style={styles.infoContent}>
+              <ThemedText style={styles.infoLabel}>State</ThemedText>
+              <ThemedText style={styles.infoValue}>Maharashtra</ThemedText>
+            </View>
+          </View>
+
+          <View style={styles.infoItem}>
+            <View style={styles.infoIcon}>
+              <Ionicons name="map-outline" size={18} color="#6B7280" />
+            </View>
+            <View style={styles.infoContent}>
+              <ThemedText style={styles.infoLabel}>District</ThemedText>
+              <ThemedText style={styles.infoValue}>Mumbai North</ThemedText>
+            </View>
+          </View>
+
+          <View style={styles.infoItem}>
+            <View style={styles.infoIcon}>
+              <Ionicons name="pin-outline" size={18} color="#6B7280" />
+            </View>
+            <View style={styles.infoContent}>
+              <ThemedText style={styles.infoLabel}>Pincode</ThemedText>
+              <ThemedText style={styles.infoValue}>400001</ThemedText>
+            </View>
+          </View>
+
+          <View style={styles.infoItem}>
+            <View style={styles.infoIcon}>
+              <Ionicons name="home-outline" size={18} color="#6B7280" />
+            </View>
+            <View style={styles.infoContent}>
+              <ThemedText style={styles.infoLabel}>Address</ThemedText>
+              <ThemedText style={styles.infoValue}>Flat 201, Shanti Nagar</ThemedText>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* Logout Section */}
+      <View style={styles.logoutSection}>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <IconSymbol name="log-out-outline" size={20} color="#fff" />
+          <Ionicons name="log-out-outline" size={20} color="#DC2626" />
           <ThemedText style={styles.logoutButtonText}>Logout</ThemedText>
         </TouchableOpacity>
       </View>
@@ -108,93 +186,131 @@ export default function AccountScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.light.background,
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
+
+  // Header Styles
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 20,
-    paddingTop: 50,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9'
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  headerContent: { flexDirection: 'row', alignItems: 'center' },
+  headerIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#EEF2FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16
   },
-  subtitle: {
-    fontSize: 16,
-    color: Colors.light.icon,
+  headerTitle: { fontSize: 24, fontWeight: '700', color: '#1F2937' },
+  headerSubtitle: { fontSize: 14, color: '#6B7280', marginTop: 2 },
+
+  // Profile Card
+  profileCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    marginHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3
   },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
+  profileHeader: { flexDirection: 'row', alignItems: 'center' },
+  avatarContainer: { position: 'relative', marginRight: 16 },
+  avatar: { width: 64, height: 64, borderRadius: 32, borderWidth: 3, borderColor: '#E5E7EB' },
+  verifiedBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 2
+  },
+  profileInfo: { flex: 1 },
+  name: { fontSize: 22, fontWeight: '700', color: '#1F2937', marginBottom: 4 },
+  epicContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 2 },
+  epic: { fontSize: 14, color: '#6B7280', marginLeft: 6, fontWeight: '500' },
+  detailsContainer: { flexDirection: 'row', alignItems: 'center' },
+  details: { fontSize: 14, color: '#6B7280', marginLeft: 6 },
+
+  // Information Sections
+  infoSection: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3
+  },
+  locationSection: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
     padding: 20,
     marginHorizontal: 20,
     marginBottom: 20,
-    boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.1)',
-    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3
   },
-  voterCard: {
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  sectionIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#EEF2FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12
+  },
+  sectionTitle: { fontSize: 18, fontWeight: '600', color: '#1F2937' },
+
+  // Information Items
+  infoList: { gap: 16 },
+  infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 8
   },
-  avatar: {
-    marginRight: 20,
-  },
-  name: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  epic: {
-    fontSize: 14,
-    color: Colors.light.icon,
-    marginTop: 2,
-  },
-  details: {
-    fontSize: 14,
-    color: Colors.light.icon,
-    marginTop: 2,
-  },
-  cardHeader: {
-    flexDirection: 'row',
+  infoIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F9FAFB',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 15,
+    marginRight: 12
   },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginLeft: 10,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEE',
-  },
-  infoLabel: {
-    fontSize: 16,
-    color: Colors.light.icon,
-  },
-  infoValue: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  logoutContainer: {
-    padding: 20,
-    paddingBottom: 40,
-  },
+  infoContent: { flex: 1 },
+  infoLabel: { fontSize: 14, color: '#6B7280', fontWeight: '500', textTransform: 'uppercase', letterSpacing: 0.5 },
+  infoValue: { fontSize: 16, fontWeight: '600', color: '#1F2937', marginTop: 2 },
+
+  // Logout Section
+  logoutSection: { paddingHorizontal: 20, paddingBottom: 40 },
   logoutButton: {
-    backgroundColor: '#FF3B30',
-    borderRadius: 10,
-    padding: 15,
+    backgroundColor: '#FEF2F2',
+    borderRadius: 12,
+    padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
+    borderWidth: 1,
+    borderColor: '#FECACA'
   },
-  logoutButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  logoutButtonText: { color: '#DC2626', fontSize: 16, fontWeight: '600', marginLeft: 4 }
 });

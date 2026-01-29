@@ -12,13 +12,6 @@ const nationalResults = [
   { id: '4', name: 'Trinamool Congress', votes: '3,46,084', percentage: '10.2%', color: '#008080', logo: require('@/assets/images/react-logo.png') },
 ];
 
-const districtWinners = [
-  { id: '1', district: 'Mumbai', party: 'Bharatiya Janata Party', votes: '45,678' },
-  { id: '2', district: 'Delhi', party: 'Aam Aadmi Party', votes: '56,789' },
-  { id: '3', district: 'Bangalore', party: 'Indian National Congress', votes: '43,210' },
-  { id: '4', district: 'Kolkata', party: 'Trinamool Congress', votes: '54,321' },
-  { id: '5', district: 'Chennai', party: 'Indian National Congress', votes: '38,976' },
-];
 
 const stateSummary = [
   { id: '1', state: 'Maharashtra', leading: 'BJP Leading' },
@@ -71,21 +64,6 @@ export default function ResultScreen() {
           ))}
       </View>
 
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Ionicons name="location-outline" size={20} color={Colors.light.primary} />
-          <ThemedText style={styles.sectionTitle}>District-wise Winners</ThemedText>
-        </View>
-        {districtWinners.map(item => (
-          <View key={item.id} style={styles.districtCard}>
-            <View>
-              <ThemedText style={styles.districtName}>{item.district}</ThemedText>
-              <ThemedText style={styles.districtParty}>{item.party}</ThemedText>
-            </View>
-            <ThemedText style={styles.districtVotes}>{item.votes} votes</ThemedText>
-          </View>
-        ))}
-      </View>
       
       <View style={styles.yourDistrictCard}>
         <ThemedText>Your District: Mumbai</ThemedText>
@@ -94,14 +72,30 @@ export default function ResultScreen() {
         <Ionicons name="trophy" size={24} color={Colors.light.primary} style={{position: 'absolute', right: 20, top: 20}}/>
       </View>
       
-      <View style={styles.section}>
-        <ThemedText style={styles.sectionTitle}>State-wise Summary</ThemedText>
-        {stateSummary.map(item => (
+      <View style={styles.statesSection}>
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionIconContainer}>
+            <Ionicons name="map-outline" size={20} color="#6366F1" />
+          </View>
+          <ThemedText style={styles.sectionTitle}>State-wise Summary</ThemedText>
+        </View>
+
+        <View style={styles.statesList}>
+          {stateSummary.map(item => (
             <View key={item.id} style={styles.stateCard}>
+              <View style={styles.stateInfo}>
+                <View style={styles.stateIcon}>
+                  <Ionicons name="business-outline" size={16} color="#6366F1" />
+                </View>
                 <ThemedText style={styles.stateName}>{item.state}</ThemedText>
+              </View>
+              <View style={styles.stateStatus}>
+                <View style={styles.statusIndicator} />
                 <ThemedText style={styles.stateLeader}>{item.leading}</ThemedText>
+              </View>
             </View>
-        ))}
+          ))}
+        </View>
       </View>
 
     </ScrollView>
@@ -109,8 +103,8 @@ export default function ResultScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F0F4F8' },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 50 },
+  container: { flex: 1, backgroundColor: '#fff' },
+  header: { flexDirection: 'row', alignItems: 'center', padding: 20 },
   headerTitle: { fontSize: 24, fontWeight: 'bold', marginLeft: 10 },
   subtitle: { fontSize: 16, color: Colors.light.icon, paddingHorizontal: 20, marginBottom: 20 },
   liveUpdatesCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#00C48C', borderRadius: 15, padding: 20, marginHorizontal: 20, marginBottom: 20 },
@@ -122,6 +116,15 @@ const styles = StyleSheet.create({
   totalVotesCount: { fontSize: 32, fontWeight: 'bold', color: Colors.light.text, marginTop: 5 },
   section: { backgroundColor: '#fff', borderRadius: 15, padding: 20, marginHorizontal: 20, marginBottom: 20 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
+  sectionIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#EEF2FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12
+  },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', marginLeft: 10 },
   partyCard: { marginBottom: 15 },
   partyInfo: { flexDirection: 'row', alignItems: 'center', marginBottom: 5 },
@@ -132,12 +135,56 @@ const styles = StyleSheet.create({
   partyPercentage: { position: 'absolute', right: 0, top: 5, fontWeight: 'bold', fontSize: 16 },
   progressBar: { height: 8, backgroundColor: '#E0E0E0', borderRadius: 4, marginTop: 5 },
   progress: { height: 8, borderRadius: 4 },
-  districtCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F8F9FA', borderRadius: 10, padding: 15, marginBottom: 10 },
-  districtName: { fontWeight: 'bold' },
-  districtParty: { fontSize: 12, color: Colors.light.icon },
-  districtVotes: { fontWeight: 'bold' },
   yourDistrictCard: { backgroundColor: '#E3F2FD', borderRadius: 15, padding: 20, marginHorizontal: 20, marginBottom: 20},
-  stateCard: {flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F8F9FA', borderRadius: 10, padding: 15, marginBottom: 10},
-  stateName: {fontWeight: 'bold'},
-  stateLeader: {fontWeight: 'bold', color: Colors.light.primary}
+  stateCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
+    borderWidth: 1,
+    borderColor: '#F3F4F6'
+  },
+  stateInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+  stateIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#EEF2FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12
+  },
+  stateName: { fontSize: 16, fontWeight: '600', color: '#1F2937' },
+  stateLeader: { fontSize: 14, fontWeight: '600', color: '#059669' },
+
+  // States Section
+  statesSection: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3
+  },
+  statesList: { gap: 12 },
+  stateStatus: { flexDirection: 'row', alignItems: 'center' },
+  statusIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10B981',
+    marginRight: 8
+  }
 });

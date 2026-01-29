@@ -85,8 +85,8 @@ export default function VoteScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F0F4F8' },
-  header: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E3F2FD', padding: 15, borderRadius: 10, margin: 20, marginTop: 50 },
+  container: { flex: 1, backgroundColor: '#fff' },
+  header: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E3F2FD', padding: 20, borderRadius: 10, margin: 20},
   headerText: { flex: 1, marginLeft: 10, color: Colors.light.primary, fontWeight: 'bold' },
   timer: { color: Colors.light.primary, fontWeight: 'bold' },
   title: { fontSize: 24, fontWeight: 'bold', color: Colors.light.text, paddingHorizontal: 20 },

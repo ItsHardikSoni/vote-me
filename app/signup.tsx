@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity, Text, ScrollView, Modal, KeyboardAvoidingView, Platform, Alert, SafeAreaView } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, Text, ScrollView, Modal, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
@@ -396,7 +397,7 @@ export default function SignupScreen() {
       end={{ x: 1, y: 1 }}
       style={styles.container}
     >
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1}}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -516,11 +517,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 40,
-    paddingHorizontal: 20,
-    width: '100%',
   },
   progressStep: {
     flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
     flex: 1,
   },
@@ -552,7 +552,7 @@ const styles = StyleSheet.create({
   },
   progressLine: {
     flex: 1,
-    height: 2,
+    height: 1.5,
     backgroundColor: '#E0E4E8',
     marginHorizontal: 10,
   },
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 20,
     boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-    elevation: 3,
+    // elevation: 3,
   },
   cardTitle: {
     fontSize: 20,
