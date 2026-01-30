@@ -5,6 +5,7 @@ import { ThemedText } from '@/components/themed-text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { supabase } from '@/lib/supabase';
 
 export default function LoginScreen() {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -13,6 +14,7 @@ export default function LoginScreen() {
   const [isFormValid, setIsFormValid] = useState(false);
   const [phoneError, setPhoneError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -28,11 +30,42 @@ export default function LoginScreen() {
     setIsFormValid(isPhoneValid && isPasswordValid);
   }, [phoneNumber, password]);
 
-  const handleLogin = () => {
-    if (isFormValid) {
-      router.replace('/(tabs)');
-    } else {
+  const handleLogin = async () => {
+    if (!isFormValid) {
       Alert.alert('Login Failed', 'Please check your credentials and try again.');
+      return;
+    }
+
+    setIsLoggingIn(true);
+
+    try {
+      // Verify credentials against Supabase users table
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('phone_number', phoneNumber)
+        .eq('password_hash', password)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Login error:', error);
+        Alert.alert('Login Failed', 'Unable to sign in. Please try again.');
+        return;
+      }
+
+      if (!data) {
+        Alert.alert('Login Failed', 'Invalid phone number or password.');
+        return;
+      }
+
+      // At this point the user is "authenticated" – you can store data in state/storage if needed
+      // For now, just navigate to the main app
+      router.replace('/(tabs)');
+    } catch (err) {
+      console.error('Unexpected login error:', err);
+      Alert.alert('Login Failed', 'An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -113,12 +146,14 @@ export default function LoginScreen() {
                 </View>
 
                 <TouchableOpacity
-                  style={[styles.loginButton, !isFormValid && styles.disabledButton]}
+                  style={[styles.loginButton, (!isFormValid || isLoggingIn) && styles.disabledButton]}
                   onPress={handleLogin}
-                  disabled={!isFormValid}
+                  disabled={!isFormValid || isLoggingIn}
                 >
                   <MaterialCommunityIcons name="login" size={20} color="#fff" style={styles.loginIcon} />
-                  <Text style={styles.loginButtonText}>Sign In</Text>
+                  <Text style={styles.loginButtonText}>
+                    {isLoggingIn ? 'Signing In...' : 'Sign In'}
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.forgotPasswordContainer} onPress={() => router.push('/forgot-password')}>
