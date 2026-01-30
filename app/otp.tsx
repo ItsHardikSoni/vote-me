@@ -1,9 +1,10 @@
+// @ts-ignore - React 19 compatibility issue with TypeScript
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, Text, Alert } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Colors } from '@/constants/theme';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
+import { supabase } from '@/lib/supabase';
 
 export default function OTPVerificationScreen() {
   const [otp, setOtp] = useState(new Array(6).fill(''));
@@ -47,22 +48,46 @@ export default function OTPVerificationScreen() {
     }
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     const enteredOtp = otp.join('');
-    if (enteredOtp === verificationOtp) {
-      Alert.alert('Success', 'OTP Verified Successfully');
+    if (enteredOtp !== verificationOtp) {
+      Alert.alert('Error', 'Invalid OTP. Please try again.');
+      return;
+    }
 
+    try {
       // Check if this is for password reset
       if (params.purpose === 'password_reset') {
         router.push({
-          pathname: '/reset-password',
+          pathname: '/reset-password' as any,
           params: { phone: params.phone }
         });
-      } else {
-        router.push('/(tabs)');
+        return;
       }
-    } else {
-      Alert.alert('Error', 'Invalid OTP. Please try again.');
+
+      // For registration, update user verification status
+      if (params.purpose === 'registration' && params.userId) {
+        const { error } = await supabase
+          .from('users')
+          .update({
+            phone_verified: true,
+            email_verified: false // Email verification can be done separately
+          })
+          .eq('id', params.userId);
+
+        if (error) {
+          console.error('Error updating user verification status:', error);
+          Alert.alert('Verification Error', 'Failed to update verification status. Please contact support.');
+          return;
+        }
+      }
+
+      Alert.alert('Success', 'Account created successfully! Please login to continue.');
+      router.replace('/login');
+
+    } catch (error) {
+      console.error('Verification error:', error);
+      Alert.alert('Verification Error', 'An unexpected error occurred. Please try again.');
     }
   };
 
@@ -80,12 +105,7 @@ export default function OTPVerificationScreen() {
   };
 
   return (
-    <LinearGradient
-      colors={['#E3F2FD', '#F3E5F5', '#FFF3E0', '#F1F8E9']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <ThemedText style={styles.title}>
         {params.purpose === 'password_reset' ? 'Reset Password' : 'OTP Verification'}
       </ThemedText>
@@ -121,7 +141,7 @@ export default function OTPVerificationScreen() {
           </TouchableOpacity>
         )}
       </View>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -130,19 +150,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
+    backgroundColor: '#fff',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 15,
-    color: Colors.light.text,
+    color: '#000',
   },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 30,
-    color: Colors.light.icon,
+    color: '#000',
   },
   otpContainer: {
     flexDirection: 'row',
@@ -157,7 +178,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     textAlign: 'center',
     fontSize: 20,
-    backgroundColor: Colors.light.background,
+    backgroundColor: '#f9fafb',
+    color: '#000',
   },
   verifyButton: {
     backgroundColor: Colors.light.tint,
@@ -178,11 +200,11 @@ const styles = StyleSheet.create({
   },
   resendText: {
     fontSize: 16,
-    color: Colors.light.icon,
+    color: '#000',
   },
   resendButton: {
     fontSize: 16,
-    color: Colors.light.tint,
+    color: '#000',
     fontWeight: 'bold',
     marginLeft: 5,
   },

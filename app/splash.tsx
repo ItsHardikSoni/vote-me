@@ -1,3 +1,4 @@
+// @ts-ignore - React 19 compatibility issue with TypeScript
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, Animated } from 'react-native';
 import { useRouter } from 'expo-router';

@@ -1,3 +1,4 @@
+// @ts-ignore - React 19 compatibility issue with TypeScript
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

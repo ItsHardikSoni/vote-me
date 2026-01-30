@@ -1,10 +1,10 @@
+// @ts-ignore - React 19 compatibility issue with TypeScript
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, Text, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 
 export default function LoginScreen() {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -37,18 +37,13 @@ export default function LoginScreen() {
   };
 
   return (
-    <LinearGradient
-      colors={['#667EEA', '#764BA2', '#F093FB', '#F5576C']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView
-          style={styles.keyboardAvoidingView}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
-        >
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
+      >
           <ScrollView
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
@@ -58,7 +53,7 @@ export default function LoginScreen() {
             <View style={styles.overlay}>
               <View style={styles.headerContainer}>
             <View style={styles.iconContainer}>
-              <MaterialCommunityIcons name="vote-outline" size={40} color="#fff" />
+              <MaterialCommunityIcons name="vote-outline" size={40} color="#000" />
             </View>
                 <ThemedText style={styles.title}>SecureVote</ThemedText>
                 <ThemedText style={styles.subtitle}>Your Voice, Your Vote</ThemedText>
@@ -146,13 +141,14 @@ export default function LoginScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -169,8 +165,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
-    paddingBottom: 40, // Extra padding for keyboard
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   headerContainer: {
     alignItems: 'center',
@@ -180,47 +174,44 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: '#f3f4f6',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.1,
     shadowRadius: 12,
-    elevation: 8,
-    borderWidth: 3,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    elevation: 6,
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 6,
-    color: '#fff',
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    color: '#000',
   },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: '#000',
     fontWeight: '500',
   },
   card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+    backgroundColor: '#fff',
     borderRadius: 20,
     padding: 24,
     marginHorizontal: 12,
     marginBottom: 20, // Ensure space for keyboard
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.1,
     shadowRadius: 24,
-    elevation: 12,
+    elevation: 8,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: '#e5e7eb',
   },
   welcomeSection: {
     alignItems: 'center',
@@ -229,12 +220,12 @@ const styles = StyleSheet.create({
   welcomeTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1F2937',
+    color: '#000',
     marginBottom: 6,
   },
   welcomeSubtitle: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#000',
     textAlign: 'center',
   },
   inputGroup: {
@@ -244,7 +235,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 6,
-    color: '#374151',
+    color: '#000',
   },
   inputWrapper: {
     flexDirection: 'row',
@@ -267,13 +258,13 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     fontSize: 15,
-    color: '#1F2937',
+    color: '#000',
   },
   passwordInput: {
     flex: 1,
     paddingVertical: 14,
     fontSize: 15,
-    color: '#1F2937',
+    color: '#000',
   },
   eyeButton: {
     padding: 8,
@@ -327,7 +318,7 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     paddingHorizontal: 12,
-    color: '#6B7280',
+    color: '#000',
     fontSize: 13,
     fontWeight: '500',
   },
@@ -336,7 +327,7 @@ const styles = StyleSheet.create({
   },
   registerText: {
     textAlign: 'center',
-    color: '#6B7280',
+    color: '#000',
     fontSize: 14,
   },
   registerLink: {

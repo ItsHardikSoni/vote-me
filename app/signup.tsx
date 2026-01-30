@@ -1,3 +1,4 @@
+// @ts-ignore - React 19 compatibility issue with TypeScript
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, Text, ScrollView, Modal, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,7 +9,7 @@ import { states } from '@/constants/states';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
+import { supabase, User } from '@/lib/supabase';
 
 export default function SignupScreen() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -42,6 +43,7 @@ export default function SignupScreen() {
   const [pincodeError, setPincodeError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const [isGenderPickerVisible, setGenderPickerVisible] = useState(false);
   const [isStatePickerVisible, setStatePickerVisible] = useState(false);
@@ -68,7 +70,7 @@ export default function SignupScreen() {
   const isAgeValid = parseInt(age, 10) >= 18;
   const isPincodeValid = pincodeRegex.test(pincode);
   const isPasswordStrong = passwordRegex.test(password);
-  const doPasswordsMatch = password === confirmPassword;
+  const doPasswordsMatch = password === confirmPassword; 
 
   useEffect(() => {
     // Set errors for all fields
@@ -174,13 +176,68 @@ export default function SignupScreen() {
     }
   };
 
-  const handleRegister = () => {
-    if (isStepValid) {
+  const handleRegister = async () => {
+    if (!isStepValid) {
+      Alert.alert('Error', 'Please fill in all required fields correctly.');
+      return;
+    }
+
+    setIsRegistering(true);
+
+    try {
+      // Hash the password (in production, use a proper hashing library)
+      const passwordHash = password; // TODO: Implement proper password hashing
+
+      // Create user object
+      const userData: Omit<User, 'id' | 'created_at' | 'updated_at'> = {
+        full_name: fullName,
+        epic_number: epicNumber,
+        age: parseInt(age),
+        date_of_birth: dob,
+        father_name: fatherName,
+        gender: gender,
+        phone_number: phoneNumber,
+        email: email,
+        aadhar_number: aadharNumber,
+        state: selectedState,
+        district: selectedDistrict,
+        pincode: pincode,
+        address: address,
+        password_hash: passwordHash,
+      };
+
+      // Save user data to Supabase
+      const { data, error } = await supabase
+        .from('users')
+        .insert([userData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error saving user data:', error);
+        Alert.alert('Registration Failed', 'Failed to save user data. Please try again.');
+        return;
+      }
+
+      // Generate OTP and proceed to verification
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       console.log('Your OTP is: ', otp);
-      router.push({ pathname: '/otp', params: { otp } });
-    } else {
-      Alert.alert('Error', 'Please fill in all required fields correctly.');
+
+      // Pass user ID along with OTP for verification
+      router.replace({
+        pathname: '/otp' as any,
+        params: {
+          otp,
+          userId: data.id,
+          purpose: 'registration'
+        }
+      });
+
+    } catch (error) {
+      console.error('Registration error:', error);
+      Alert.alert('Registration Failed', 'An unexpected error occurred. Please try again.');
+    } finally {
+      setIsRegistering(false);
     }
   };
 
@@ -189,38 +246,96 @@ export default function SignupScreen() {
       case 1:
         return (
           <>
-            <ThemedText style={styles.stepTitle}>Personal Information</ThemedText>
-            <ThemedText style={styles.stepDescription}>Let&apos;s start with your basic details</ThemedText>
+            <View style={styles.welcomeSection}>
+              <ThemedText style={styles.welcomeTitle}>Personal Information</ThemedText>
+              <ThemedText style={styles.welcomeSubtitle}>Let&apos;s start with your basic details</ThemedText>
+            </View>
             <View style={styles.card}>
               <View style={styles.inputGroup}>
-                <ThemedText style={styles.label}>Full Name <Text style={styles.required}>*</Text></ThemedText>
-                <TextInput style={styles.input} placeholder="Enter your full name" value={fullName} onChangeText={setFullName} />
+                <ThemedText style={styles.label}>Full Name <Text style={styles.required}>✱</Text></ThemedText>
+                <View style={styles.inputWrapper}>
+                  <MaterialCommunityIcons name="account" size={20} color="#6366F1" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your full name"
+                    placeholderTextColor="#9CA3AF"
+                    value={fullName}
+                    onChangeText={setFullName}
+                  />
+                </View>
               </View>
               <View style={styles.inputGroup}>
-                <ThemedText style={styles.label}>EPIC Number <Text style={styles.required}>*</Text></ThemedText>
-                <TextInput style={styles.input} placeholder="Enter your EPIC number" value={epicNumber} onChangeText={setEpicNumber} maxLength={10}/>
+                <ThemedText style={styles.label}>EPIC Number <Text style={styles.required}>✱</Text></ThemedText>
+                <View style={styles.inputWrapper}>
+                  <MaterialCommunityIcons name="card-text" size={20} color="#6366F1" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your EPIC number"
+                    placeholderTextColor="#9CA3AF"
+                    value={epicNumber}
+                    onChangeText={setEpicNumber}
+                    maxLength={10}
+                  />
+                </View>
                 {epicError ? <Text style={styles.errorText}>{epicError}</Text> : null}
               </View>
               <View style={styles.inputGroup}>
-                <ThemedText style={styles.label}>Phone Number <Text style={styles.required}>*</Text></ThemedText>
-                <TextInput style={styles.input} placeholder="Enter your phone number" value={phoneNumber} onChangeText={setPhoneNumber} keyboardType="phone-pad" maxLength={10}/>
+                <ThemedText style={styles.label}>Phone Number <Text style={styles.required}>✱</Text></ThemedText>
+                <View style={styles.inputWrapper}>
+                  <MaterialCommunityIcons name="phone" size={20} color="#6366F1" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your phone number"
+                    placeholderTextColor="#9CA3AF"
+                    value={phoneNumber}
+                    onChangeText={setPhoneNumber}
+                    keyboardType="phone-pad"
+                    maxLength={10}
+                  />
+                </View>
                 {phoneError ? <Text style={styles.errorText}>{phoneError}</Text> : null}
               </View>
               <View style={styles.inputGroup}>
-                <ThemedText style={styles.label}>Email Address <Text style={styles.required}>*</Text></ThemedText>
-                <TextInput style={styles.input} placeholder="Enter your email address" value={email} onChangeText={setEmail} keyboardType="email-address" />
+                <ThemedText style={styles.label}>Email Address <Text style={styles.required}>✱</Text></ThemedText>
+                <View style={styles.inputWrapper}>
+                  <MaterialCommunityIcons name="email" size={20} color="#6366F1" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your email address"
+                    placeholderTextColor="#9CA3AF"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                  />
+                </View>
                 {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
               </View>
               <View style={styles.inputGroup}>
-                <ThemedText style={styles.label}>Aadhar Number <Text style={styles.required}>*</Text></ThemedText>
-                <TextInput style={styles.input} placeholder="Enter your Aadhar number" value={aadharNumber} onChangeText={setAadharNumber} keyboardType="numeric" maxLength={12}/>
+                <ThemedText style={styles.label}>Aadhar Number <Text style={styles.required}>✱</Text></ThemedText>
+                <View style={styles.inputWrapper}>
+                  <MaterialCommunityIcons name="card-account-details" size={20} color="#6366F1" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your Aadhar number"
+                    placeholderTextColor="#9CA3AF"
+                    value={aadharNumber}
+                    onChangeText={setAadharNumber}
+                    keyboardType="numeric"
+                    maxLength={12}
+                  />
+                </View>
                 {aadharError ? <Text style={styles.errorText}>{aadharError}</Text> : null}
               </View>
               <View style={styles.inputGroup}>
-                <ThemedText style={styles.label}>Date of Birth <Text style={styles.required}>*</Text></ThemedText>
-                <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
-                  <Text style={{ color: dob ? '#000' : '#999' }}>{dob || 'Select Date of Birth'}</Text>
-                </TouchableOpacity>
+                <ThemedText style={styles.label}>Date of Birth <Text style={styles.required}>✱</Text></ThemedText>
+                <View style={styles.dateOfBirthWrapper}>
+                  <MaterialCommunityIcons name="calendar" size={20} color="#0EA5E9" style={styles.inputIcon} />
+                  <TouchableOpacity style={styles.dateOfBirthTouchable} onPress={() => setShowDatePicker(true)}>
+                    <Text style={dob ? styles.dateOfBirthText : styles.dateOfBirthPlaceholder}>
+                      {dob || 'Select Date of Birth'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
                 {showDatePicker && (
                   <DateTimePicker
                     testID="dateTimePicker"
@@ -232,19 +347,42 @@ export default function SignupScreen() {
                 )}
               </View>
               <View style={styles.inputGroup}>
-                <ThemedText style={styles.label}>Age <Text style={styles.required}>*</Text></ThemedText>
-                <TextInput style={[styles.input, {backgroundColor: '#E0E4E8'}]} placeholder="Your age will be calculated" value={age} editable={false} />
+                <ThemedText style={styles.label}>Age <Text style={styles.required}>✱</Text></ThemedText>
+                <View style={styles.inputWrapper}>
+                  <MaterialCommunityIcons name="calendar-account" size={20} color="#6366F1" style={styles.inputIcon} />
+                  <TextInput
+                    style={[styles.input, {backgroundColor: 'transparent'}]}
+                    placeholder="Your age will be calculated"
+                    placeholderTextColor="#9CA3AF"
+                    value={age}
+                    editable={false}
+                  />
+                </View>
                 {ageError ? <Text style={styles.errorText}>{ageError}</Text> : null}
               </View>
               <View style={styles.inputGroup}>
-                <ThemedText style={styles.label}>Father&apos;s Name <Text style={styles.required}>*</Text></ThemedText>
-                <TextInput style={styles.input} placeholder="Enter your father's name" value={fatherName} onChangeText={setFatherName} />
+                <ThemedText style={styles.label}>Father&apos;s Name <Text style={styles.required}>✱</Text></ThemedText>
+                <View style={styles.inputWrapper}>
+                  <MaterialCommunityIcons name="account-group" size={20} color="#6366F1" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your father's name"
+                    placeholderTextColor="#9CA3AF"
+                    value={fatherName}
+                    onChangeText={setFatherName}
+                  />
+                </View>
               </View>
               <View style={styles.inputGroup}>
-                <ThemedText style={styles.label}>Gender <Text style={styles.required}>*</Text></ThemedText>
-                <TouchableOpacity style={styles.input} onPress={() => setGenderPickerVisible(true)}>
-                  <Text style={{ color: gender ? '#000' : '#999' }}>{gender || 'Select Gender'}</Text>
-                </TouchableOpacity>
+                <ThemedText style={styles.label}>Gender <Text style={styles.required}>✱</Text></ThemedText>
+                <View style={styles.genderWrapper}>
+                  <MaterialCommunityIcons name="gender-male-female" size={20} color="#EC4899" style={styles.inputIcon} />
+                  <TouchableOpacity style={styles.genderTouchable} onPress={() => setGenderPickerVisible(true)}>
+                    <Text style={gender ? styles.genderText : styles.genderPlaceholder}>
+                      {gender || 'Select Gender'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
                 <Modal
                   transparent={true}
                   visible={isGenderPickerVisible}
@@ -271,14 +409,21 @@ export default function SignupScreen() {
       case 2:
         return (
           <>
-            <ThemedText style={styles.stepTitle}>Location Details</ThemedText>
-            <ThemedText style={styles.stepDescription}>Tell us where you&apos;re located</ThemedText>
+            <View style={styles.welcomeSection}>
+              <ThemedText style={styles.welcomeTitle}>Location Details</ThemedText>
+              <ThemedText style={styles.welcomeSubtitle}>Tell us where you&apos;re located</ThemedText>
+            </View>
             <View style={styles.card}>
               <View style={styles.inputGroup}>
-                <ThemedText style={styles.label}>State <Text style={styles.required}>*</Text></ThemedText>
-                <TouchableOpacity style={styles.input} onPress={() => setStatePickerVisible(true)}>
-                  <Text style={{ color: selectedState ? '#000' : '#999' }}>{selectedState || 'Select State'}</Text>
-                </TouchableOpacity>
+                <ThemedText style={styles.label}>State <Text style={styles.required}>✱</Text></ThemedText>
+                <View style={styles.stateWrapper}>
+                  <MaterialCommunityIcons name="map" size={20} color="#0284C7" style={styles.inputIcon} />
+                  <TouchableOpacity style={styles.stateTouchable} onPress={() => setStatePickerVisible(true)}>
+                    <Text style={selectedState ? styles.stateText : styles.statePlaceholder}>
+                      {selectedState || 'Select State'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
                 <Modal
                   transparent={true}
                   visible={isStatePickerVisible}
@@ -302,14 +447,19 @@ export default function SignupScreen() {
                 </Modal>
               </View>
               <View style={styles.inputGroup}>
-                <ThemedText style={styles.label}>District <Text style={styles.required}>*</Text></ThemedText>
-                <TouchableOpacity
-                  style={[styles.input, !selectedState && styles.disabledInput]}
-                  onPress={() => setDistrictPickerVisible(true)}
-                  disabled={!selectedState}
-                >
-                  <Text style={{ color: selectedDistrict ? '#000' : '#999' }}>{selectedDistrict || 'Select District'}</Text>
-                </TouchableOpacity>
+                <ThemedText style={styles.label}>District <Text style={styles.required}>✱</Text></ThemedText>
+                <View style={[styles.districtWrapper, !selectedState && styles.disabledInput]}>
+                  <MaterialCommunityIcons name="map-marker" size={20} color="#16A34A" style={styles.inputIcon} />
+                  <TouchableOpacity
+                    style={styles.districtTouchable}
+                    onPress={() => setDistrictPickerVisible(true)}
+                    disabled={!selectedState}
+                  >
+                    <Text style={selectedDistrict ? styles.districtText : styles.districtPlaceholder}>
+                      {selectedDistrict || 'Select District'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
                 <Modal
                   transparent={true}
                   visible={isDistrictPickerVisible}
@@ -333,13 +483,35 @@ export default function SignupScreen() {
                 </Modal>
               </View>
               <View style={styles.inputGroup}>
-                <ThemedText style={styles.label}>Pincode <Text style={styles.required}>*</Text></ThemedText>
-                <TextInput style={styles.input} placeholder="Enter your pincode" value={pincode} onChangeText={setPincode} keyboardType="numeric" maxLength={6}/>
+                <ThemedText style={styles.label}>Pincode <Text style={styles.required}>✱</Text></ThemedText>
+                <View style={styles.inputWrapper}>
+                  <MaterialCommunityIcons name="map-marker-radius" size={20} color="#6366F1" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your pincode"
+                    placeholderTextColor="#9CA3AF"
+                    value={pincode}
+                    onChangeText={setPincode}
+                    keyboardType="numeric"
+                    maxLength={6}
+                  />
+                </View>
                 {pincodeError ? <Text style={styles.errorText}>{pincodeError}</Text> : null}
               </View>
               <View style={styles.inputGroup}>
-                <ThemedText style={styles.label}>Full Address <Text style={styles.required}>*</Text></ThemedText>
-                <TextInput style={styles.multilineInput} placeholder="Enter your full address" value={address} onChangeText={setAddress} multiline />
+                <ThemedText style={styles.label}>Full Address <Text style={styles.required}>✱</Text></ThemedText>
+                <View style={[styles.inputWrapper, {alignItems: 'flex-start'}]}>
+                  <MaterialCommunityIcons name="home" size={20} color="#6366F1" style={[styles.inputIcon, {marginTop: 14}]} />
+                  <TextInput
+                    style={[styles.input, {minHeight: 80, textAlignVertical: 'top'}]}
+                    placeholder="Enter your full address"
+                    placeholderTextColor="#9CA3AF"
+                    value={address}
+                    onChangeText={setAddress}
+                    multiline
+                    numberOfLines={3}
+                  />
+                </View>
               </View>
             </View>
           </>
@@ -347,37 +519,51 @@ export default function SignupScreen() {
       case 3:
         return (
           <>
-            <ThemedText style={styles.stepTitle}>Create Password</ThemedText>
-            <ThemedText style={styles.stepDescription}>Secure your account with a strong password</ThemedText>
+            <View style={styles.welcomeSection}>
+              <ThemedText style={styles.welcomeTitle}>Create Password</ThemedText>
+              <ThemedText style={styles.welcomeSubtitle}>Secure your account with a strong password</ThemedText>
+            </View>
             <View style={styles.card}>
               <View style={styles.inputGroup}>
-                <ThemedText style={styles.label}>Create Password <Text style={styles.required}>*</Text></ThemedText>
-                <View style={styles.passwordContainer}>
+                <ThemedText style={styles.label}>Create Password <Text style={styles.required}>✱</Text></ThemedText>
+                <View style={styles.inputWrapper}>
+                  <MaterialCommunityIcons name="lock" size={20} color="#6366F1" style={styles.inputIcon} />
                   <TextInput
-                    style={styles.passwordInput}
+                    style={styles.input}
                     placeholder="Enter your password"
+                    placeholderTextColor="#9CA3AF"
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry={!showPassword}
                   />
-                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                    <MaterialCommunityIcons name={showPassword ? 'eye-off' : 'eye'} size={24} color={Colors.light.icon} />
+                  <TouchableOpacity style={styles.eyeButton} onPress={() => setShowPassword(!showPassword)}>
+                    <MaterialCommunityIcons
+                      name={showPassword ? 'eye-off' : 'eye'}
+                      size={20}
+                      color="#6B7280"
+                    />
                   </TouchableOpacity>
                 </View>
                 {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
               </View>
               <View style={styles.inputGroup}>
-                <ThemedText style={styles.label}>Confirm Password <Text style={styles.required}>*</Text></ThemedText>
-                <View style={styles.passwordContainer}>
+                <ThemedText style={styles.label}>Confirm Password <Text style={styles.required}>✱</Text></ThemedText>
+                <View style={styles.inputWrapper}>
+                  <MaterialCommunityIcons name="lock-check" size={20} color="#6366F1" style={styles.inputIcon} />
                   <TextInput
-                    style={styles.passwordInput}
+                    style={styles.input}
                     placeholder="Confirm your password"
+                    placeholderTextColor="#9CA3AF"
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
                     secureTextEntry={!showConfirmPassword}
                   />
-                  <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                    <MaterialCommunityIcons name={showConfirmPassword ? 'eye-off' : 'eye'} size={24} color={Colors.light.icon} />
+                  <TouchableOpacity style={styles.eyeButton} onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                    <MaterialCommunityIcons
+                      name={showConfirmPassword ? 'eye-off' : 'eye'}
+                      size={20}
+                      color="#6B7280"
+                    />
                   </TouchableOpacity>
                 </View>
                 {confirmPasswordError ? <Text style={styles.errorText}>{confirmPasswordError}</Text> : null}
@@ -391,12 +577,7 @@ export default function SignupScreen() {
   };
 
   return (
-    <LinearGradient
-      colors={['#E3F2FD', '#F3E5F5', '#FFF3E0', '#F1F8E9']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <SafeAreaView style={{ flex: 1}}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -409,8 +590,16 @@ export default function SignupScreen() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
+            <View style={styles.overlay}>
+              <View style={styles.headerContainer}>
+                <View style={styles.iconContainer}>
+                  <MaterialCommunityIcons name="account-plus-outline" size={35} color="#000" />
+                </View>
+                <ThemedText style={styles.title}>Create Account</ThemedText>
+                <ThemedText style={styles.subtitle}>Join SecureVote today</ThemedText>
+              </View>
+
             <View style={styles.contentWrapper}>
-            <ThemedText style={styles.title}>Create Account</ThemedText>
 
             {/* Progress Indicator */}
             <View style={styles.progressContainer}>
@@ -463,11 +652,13 @@ export default function SignupScreen() {
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
-                  style={[styles.navButton, styles.registerButton, !isStepValid && styles.disabledButton]}
+                  style={[styles.navButton, styles.registerButton, (!isStepValid || isRegistering) && styles.disabledButton]}
                   onPress={handleRegister}
-                  disabled={!isStepValid}
+                  disabled={!isStepValid || isRegistering}
                 >
-                  <Text style={styles.navButtonText}>Create Account</Text>
+                  <Text style={styles.navButtonText}>
+                    {isRegistering ? 'Creating Account...' : 'Create Account'}
+                  </Text>
                   <MaterialCommunityIcons name="check" size={20} color="#fff" />
                 </TouchableOpacity>
               )}
@@ -483,18 +674,20 @@ export default function SignupScreen() {
                 </Text>
               </TouchableOpacity>
             )}
+            </View>
           </View>
         </ScrollView>
       </ThemedView>
     </KeyboardAvoidingView>
     </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
   },
   scrollContainer: {
     padding: 20,
@@ -506,79 +699,105 @@ const styles = StyleSheet.create({
     maxWidth: 400,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 30,
-    color: Colors.light.text,
+    marginBottom: 4,
+    color: '#000',
   },
   progressContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 32,
+    marginHorizontal: 40,
+    paddingHorizontal: 20,
   },
   progressStep: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
     flex: 1,
+    justifyContent: 'center',
   },
   progressCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#E0E4E8',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#E0E4E8',
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   progressCircleActive: {
-    backgroundColor: Colors.light.tint,
-    borderColor: Colors.light.tint,
+    backgroundColor: '#3B82F6',
+    borderColor: '#3B82F6',
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   progressCircleCompleted: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
+    backgroundColor: '#10B981',
+    borderColor: '#10B981',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   progressText: {
-    color: '#999',
-    fontSize: 16,
-    fontWeight: 'bold',
+    color: '#6b7280',
+    fontSize: 14,
+    fontWeight: '700',
   },
   progressTextActive: {
     color: '#fff',
   },
   progressLine: {
     flex: 1,
-    height: 1.5,
+    height: 2,
     backgroundColor: '#E0E4E8',
-    marginHorizontal: 10,
+    marginHorizontal: 8,
+    borderRadius: 1,
   },
   progressLineCompleted: {
     backgroundColor: '#4CAF50',
   },
-  stepTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-    color: Colors.light.text,
+  welcomeSection: {
+    alignItems: 'center',
+    marginBottom: 20,
   },
-  stepDescription: {
-    fontSize: 16,
+  welcomeTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 4,
+  },
+  welcomeSubtitle: {
+    fontSize: 13,
+    color: '#000',
     textAlign: 'center',
-    marginBottom: 30,
-    color: Colors.light.icon,
   },
   card: {
-    backgroundColor: Colors.light.background,
-    borderRadius: 15,
-    padding: 20,
-    marginBottom: 20,
-    boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-    // elevation: 3,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 24,
+    marginHorizontal: 12,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.1,
+    shadowRadius: 24,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
   },
   cardTitle: {
     fontSize: 20,
@@ -587,26 +806,47 @@ const styles = StyleSheet.create({
     color: Colors.light.text,
   },
   inputGroup: {
-    marginBottom: 15,
+    marginBottom: 20,
   },
   label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    color: Colors.light.text,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 6,
+    color: '#000',
   },
   required: {
-    color: 'red',
+    color: '#EF4444',
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingHorizontal: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  inputIcon: {
+    marginRight: 12,
   },
   input: {
-    backgroundColor: '#F0F4F8',
-    borderRadius: 10,
-    padding: 15,
-    fontSize: 16,
-    justifyContent: 'center',
+    flex: 1,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: '#000',
+  },
+  eyeButton: {
+    padding: 8,
   },
   disabledInput: {
-    backgroundColor: '#E0E4E8',
+    backgroundColor: '#F3F4F6',
+    borderColor: '#D1D5DB',
+    opacity: 0.6,
   },
   multilineInput: {
     backgroundColor: '#F0F4F8',
@@ -638,9 +878,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 15,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     flex: 1,
-    gap: 8,
+    borderRadius: 12,
+    shadowColor: '#6366F1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 6,
   },
   previousButton: {
     backgroundColor: '#6B7280',
@@ -656,8 +902,9 @@ const styles = StyleSheet.create({
   },
   navButtonText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
   modalContainer: {
     flex: 1,
@@ -695,19 +942,171 @@ const styles = StyleSheet.create({
     color: 'red',
   },
   errorText: {
-    color: 'red',
-    marginTop: 5,
+    color: '#EF4444',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
   },
   loginContainer: {
     marginTop: 20,
   },
   loginText: {
     textAlign: 'center',
-    color: Colors.light.icon,
+    color: '#000',
     fontSize: 16,
   },
   loginLink: {
-    color: Colors.light.tint,
+    color: '#000',
     fontWeight: 'bold',
   },
+  overlay: {
+    alignItems: 'center',
+    marginBottom: 30,
+    paddingTop: 20,
+  },
+  headerContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  dateOfBirthWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F9FF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#0EA5E9',
+    paddingHorizontal: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  genderWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FCE7F3',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#EC4899',
+    paddingHorizontal: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  dateOfBirthTouchable: {
+    flex: 1,
+    paddingVertical: 14,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  genderTouchable: {
+    flex: 1,
+    paddingVertical: 14,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  dateOfBirthText: {
+    color: '#1F2937',
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  genderText: {
+    color: '#1F2937',
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  dateOfBirthPlaceholder: {
+    color: '#64748B',
+    fontSize: 15,
+  },
+  genderPlaceholder: {
+    color: '#64748B',
+    fontSize: 15,
+  },
+  stateWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E0F2FE',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#0284C7',
+    paddingHorizontal: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  districtWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0FDF4',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#16A34A',
+    paddingHorizontal: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  stateTouchable: {
+    flex: 1,
+    paddingVertical: 14,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  districtTouchable: {
+    flex: 1,
+    paddingVertical: 14,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  stateText: {
+    color: '#1F2937',
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  districtText: {
+    color: '#1F2937',
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  statePlaceholder: {
+    color: '#64748B',
+    fontSize: 15,
+  },
+  districtPlaceholder: {
+    color: '#64748B',
+    fontSize: 15,
+  },
+
+  // Modern overlay styles
+  iconContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: '#f3f4f6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+  },
+  subtitle: {
+    fontSize: 14,
+    textAlign: 'center',
+    color: '#000',
+    fontWeight: '500',
+    marginBottom: 16,
+  }
 });

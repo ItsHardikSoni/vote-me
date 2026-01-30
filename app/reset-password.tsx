@@ -1,10 +1,10 @@
+// @ts-ignore - React 19 compatibility issue with TypeScript
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, Text, Alert } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Colors } from '@/constants/theme';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ResetPasswordScreen() {
   const [newPassword, setNewPassword] = useState('');
@@ -55,12 +55,7 @@ export default function ResetPasswordScreen() {
   };
 
   return (
-    <LinearGradient
-      colors={['#E3F2FD', '#F3E5F5', '#FFF3E0', '#F1F8E9']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.container}
-    >
+    <View style={styles.container}>
       {/* <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -87,7 +82,7 @@ export default function ResetPasswordScreen() {
               secureTextEntry={!showNewPassword}
             />
             <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)}>
-              <MaterialCommunityIcons name={showNewPassword ? 'eye-off' : 'eye'} size={24} color={Colors.light.icon} />
+              <MaterialCommunityIcons name={showNewPassword ? 'eye-off' : 'eye'} size={24} color="#000" />
             </TouchableOpacity>
           </View>
           {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
@@ -104,7 +99,7 @@ export default function ResetPasswordScreen() {
               secureTextEntry={!showConfirmPassword}
             />
             <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-              <MaterialCommunityIcons name={showConfirmPassword ? 'eye-off' : 'eye'} size={24} color={Colors.light.icon} />
+              <MaterialCommunityIcons name={showConfirmPassword ? 'eye-off' : 'eye'} size={24} color="#000" />
             </TouchableOpacity>
           </View>
           {confirmError ? <Text style={styles.errorText}>{confirmError}</Text> : null}
@@ -120,7 +115,7 @@ export default function ResetPasswordScreen() {
           </Text>
         </TouchableOpacity>
       </View>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -129,6 +124,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
+    backgroundColor: '#fff',
   },
   header: {
     position: 'absolute',
@@ -144,20 +140,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 10,
-    color: Colors.light.text,
+    color: '#000',
   },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 30,
-    color: Colors.light.icon,
+    color: '#000',
   },
   card: {
-    backgroundColor: Colors.light.background,
+    backgroundColor: '#fff',
     borderRadius: 15,
     padding: 25,
-    boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 3,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
   },
   inputGroup: {
     marginBottom: 15,
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 5,
-    color: Colors.light.text,
+    color: '#000',
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -179,6 +180,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 15,
     fontSize: 16,
+    color: '#000',
   },
   resetButton: {
     backgroundColor: Colors.light.tint,
