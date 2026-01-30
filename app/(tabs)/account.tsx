@@ -116,7 +116,7 @@ export default function AccountScreen() {
       <View style={styles.profileCard}>
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
-            <Image source={{ uri: 'https://i.pravatar.cc/150?u=shubham' }} style={styles.avatar} />
+            <Image source={{ uri: 'https://i.pravatar.cc/150?u=a042581f4e29026704d' }} style={styles.avatar} />
             <View style={styles.verifiedBadge}>
               <Ionicons name="checkmark-circle" size={16} color="#10B981" />
             </View>

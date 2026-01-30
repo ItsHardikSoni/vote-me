@@ -1,11 +1,13 @@
 // @ts-ignore - React 19 compatibility issue with TypeScript
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View, FlatList, TouchableOpacity, Image } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '@/lib/supabase';
 
 const candidates = [
   { id: '1', name: 'Rajesh Kumar', party: 'Indian National Congress', icon: require('@/assets/images/react-logo.png') },
@@ -17,7 +19,38 @@ const candidates = [
 export default function VoteScreen() {
   const [selectedCandidate, setSelectedCandidate] = useState<string | null>(null);
   const [voted, setVoted] = useState(false);
+  const [voterName, setVoterName] = useState<string>('');
+  const [voterEpic, setVoterEpic] = useState<string>('');
   const router = useRouter();
+
+  const loadVoterInfo = useCallback(async () => {
+    try {
+      const phoneNumber = await AsyncStorage.getItem('loggedInUserPhone');
+      if (!phoneNumber) return;
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('full_name, epic_number')
+        .eq('phone_number', phoneNumber)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching voter info:', error);
+        return;
+      }
+
+      if (data) {
+        setVoterName(data.full_name ?? '');
+        setVoterEpic(data.epic_number ?? '');
+      }
+    } catch (e) {
+      console.error('Unexpected error loading voter info:', e);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadVoterInfo();
+  }, [loadVoterInfo]);
 
   const handleVote = () => {
     if (selectedCandidate) {
@@ -48,8 +81,8 @@ export default function VoteScreen() {
             Thank you for participating in the democratic process. Your vote has been recorded securely.
           </ThemedText>
           <View style={styles.voterInfo}>
-            <ThemedText>Voter: Demo User</ThemedText>
-            <ThemedText>EPIC: asdf</ThemedText>
+            <ThemedText>Voter: {voterName || '—'}</ThemedText>
+            <ThemedText>EPIC: {voterEpic || '—'}</ThemedText>
           </View>
           <View style={styles.encryptionInfo}>
             <Ionicons name="shield-checkmark-outline" size={16} color={Colors.light.icon} />

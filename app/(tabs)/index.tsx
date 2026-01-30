@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/themed-text';
-import { Colors } from '@/constants/theme';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '@/lib/supabase';
 
 const upcomingElections = [
   { id: '1', name: 'Maharashtra Assembly Election', date: '20 November 2024' },
@@ -48,15 +49,42 @@ const Countdown = () => {
 
 const HomeScreenHeader = () => {
   const router = useRouter();
+  const [fullName, setFullName] = useState<string>('User');
+
+  useEffect(() => {
+    const loadName = async () => {
+      try {
+        const phoneNumber = await AsyncStorage.getItem('loggedInUserPhone');
+        if (!phoneNumber) return;
+
+        const { data, error } = await supabase
+          .from('users')
+          .select('full_name')
+          .eq('phone_number', phoneNumber)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error fetching user name:', error);
+          return;
+        }
+
+        if (data?.full_name) setFullName(data.full_name);
+      } catch (e) {
+        console.error('Error loading user name:', e);
+      }
+    };
+
+    loadName();
+  }, []);
 
   return (
     <>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <ThemedText style={styles.headerTitle}>Hi, Shubham 👋</ThemedText>
+          <ThemedText style={styles.headerTitle}>Hi, {fullName} 👋</ThemedText>
           <ThemedText style={styles.headerSubtitle}>Welcome to SecureVote</ThemedText>
         </View>
-        <TouchableOpacity style={styles.profileButton}>
+        <TouchableOpacity style={styles.profileButton} onPress={() => router.push('/(tabs)/account')}>
           <Image source={{ uri: 'https://i.pravatar.cc/150?u=a042581f4e29026704d' }} style={styles.profileIcon} />
           <View style={styles.onlineIndicator} />
         </TouchableOpacity>
