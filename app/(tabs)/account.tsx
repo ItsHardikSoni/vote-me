@@ -1,15 +1,58 @@
-
-import React from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
+// @ts-ignore - React 19 compatibility issue with TypeScript
+import React, { useState, useEffect, useCallback } from 'react';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Alert, Image, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { supabase, User } from '@/lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AccountScreen() {
   const router = useRouter();
+  const [userData, setUserData] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchUserData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const phoneNumber = await AsyncStorage.getItem('loggedInUserPhone');
+      
+      if (!phoneNumber) {
+        Alert.alert('Error', 'No user session found. Please login again.');
+        router.replace('/login');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('phone_number', phoneNumber)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching user data:', error);
+        Alert.alert('Error', 'Failed to load user data. Please try again.');
+        return;
+      }
+
+      if (!data) {
+        Alert.alert('Error', 'User not found. Please login again.');
+        router.replace('/login');
+        return;
+      }
+
+      setUserData(data);
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      Alert.alert('Error', 'An unexpected error occurred.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [router]);
+
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
 
   const handleLogout = () => {
     Alert.alert(
@@ -23,7 +66,9 @@ export default function AccountScreen() {
         {
           text: 'Logout',
           style: 'destructive',
-          onPress: () => {
+          onPress: async () => {
+            // Clear stored user data
+            await AsyncStorage.removeItem('loggedInUserPhone');
             // Navigate to login screen
             router.replace('/login');
           },
@@ -31,6 +76,26 @@ export default function AccountScreen() {
       ]
     );
   };
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color="#6366F1" />
+        <ThemedText style={styles.loadingText}>Loading your profile...</ThemedText>
+      </View>
+    );
+  }
+
+  if (!userData) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ThemedText style={styles.errorText}>No user data found</ThemedText>
+        <TouchableOpacity style={styles.retryButton} onPress={fetchUserData}>
+          <ThemedText style={styles.retryButtonText}>Retry</ThemedText>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -57,14 +122,14 @@ export default function AccountScreen() {
             </View>
           </View>
           <View style={styles.profileInfo}>
-            <ThemedText style={styles.name}>Shubham Sharma</ThemedText>
+            <ThemedText style={styles.name}>{userData.full_name}</ThemedText>
             <View style={styles.epicContainer}>
               <Ionicons name="card-outline" size={14} color="#6B7280" />
-              <ThemedText style={styles.epic}>EPIC: JK123456789</ThemedText>
+              <ThemedText style={styles.epic}>EPIC: {userData.epic_number}</ThemedText>
             </View>
             <View style={styles.detailsContainer}>
               <Ionicons name="male-female-outline" size={14} color="#6B7280" />
-              <ThemedText style={styles.details}>Male • 28 years</ThemedText>
+              <ThemedText style={styles.details}>{userData.gender} • {userData.age} years</ThemedText>
             </View>
           </View>
         </View>
@@ -86,7 +151,17 @@ export default function AccountScreen() {
             </View>
             <View style={styles.infoContent}>
               <ThemedText style={styles.infoLabel}>Full Name</ThemedText>
-              <ThemedText style={styles.infoValue}>Shubham Sharma</ThemedText>
+              <ThemedText style={styles.infoValue}>{userData.full_name}</ThemedText>
+            </View>
+          </View>
+
+          <View style={styles.infoItem}>
+            <View style={styles.infoIcon}>
+              <Ionicons name="card-outline" size={18} color="#6B7280" />
+            </View>
+            <View style={styles.infoContent}>
+              <ThemedText style={styles.infoLabel}>EPIC Number</ThemedText>
+              <ThemedText style={styles.infoValue}>{userData.epic_number}</ThemedText>
             </View>
           </View>
 
@@ -96,7 +171,17 @@ export default function AccountScreen() {
             </View>
             <View style={styles.infoContent}>
               <ThemedText style={styles.infoLabel}>Father&apos;s Name</ThemedText>
-              <ThemedText style={styles.infoValue}>Rajesh Sharma</ThemedText>
+              <ThemedText style={styles.infoValue}>{userData.father_name}</ThemedText>
+            </View>
+          </View>
+
+          <View style={styles.infoItem}>
+            <View style={styles.infoIcon}>
+              <Ionicons name="calendar-outline" size={18} color="#6B7280" />
+            </View>
+            <View style={styles.infoContent}>
+              <ThemedText style={styles.infoLabel}>Date of Birth</ThemedText>
+              <ThemedText style={styles.infoValue}>{new Date(userData.date_of_birth).toLocaleDateString()}</ThemedText>
             </View>
           </View>
 
@@ -106,7 +191,7 @@ export default function AccountScreen() {
             </View>
             <View style={styles.infoContent}>
               <ThemedText style={styles.infoLabel}>Age</ThemedText>
-              <ThemedText style={styles.infoValue}>28 years</ThemedText>
+              <ThemedText style={styles.infoValue}>{userData.age} years</ThemedText>
             </View>
           </View>
 
@@ -116,7 +201,37 @@ export default function AccountScreen() {
             </View>
             <View style={styles.infoContent}>
               <ThemedText style={styles.infoLabel}>Gender</ThemedText>
-              <ThemedText style={styles.infoValue}>Male</ThemedText>
+              <ThemedText style={styles.infoValue}>{userData.gender}</ThemedText>
+            </View>
+          </View>
+
+          <View style={styles.infoItem}>
+            <View style={styles.infoIcon}>
+              <Ionicons name="call-outline" size={18} color="#6B7280" />
+            </View>
+            <View style={styles.infoContent}>
+              <ThemedText style={styles.infoLabel}>Phone Number</ThemedText>
+              <ThemedText style={styles.infoValue}>{userData.phone_number}</ThemedText>
+            </View>
+          </View>
+
+          <View style={styles.infoItem}>
+            <View style={styles.infoIcon}>
+              <Ionicons name="mail-outline" size={18} color="#6B7280" />
+            </View>
+            <View style={styles.infoContent}>
+              <ThemedText style={styles.infoLabel}>Email</ThemedText>
+              <ThemedText style={styles.infoValue}>{userData.email}</ThemedText>
+            </View>
+          </View>
+
+          <View style={styles.infoItem}>
+            <View style={styles.infoIcon}>
+              <Ionicons name="id-card-outline" size={18} color="#6B7280" />
+            </View>
+            <View style={styles.infoContent}>
+              <ThemedText style={styles.infoLabel}>Aadhar Number</ThemedText>
+              <ThemedText style={styles.infoValue}>{userData.aadhar_number}</ThemedText>
             </View>
           </View>
         </View>
@@ -138,7 +253,7 @@ export default function AccountScreen() {
             </View>
             <View style={styles.infoContent}>
               <ThemedText style={styles.infoLabel}>State</ThemedText>
-              <ThemedText style={styles.infoValue}>Maharashtra</ThemedText>
+              <ThemedText style={styles.infoValue}>{userData.state}</ThemedText>
             </View>
           </View>
 
@@ -148,7 +263,7 @@ export default function AccountScreen() {
             </View>
             <View style={styles.infoContent}>
               <ThemedText style={styles.infoLabel}>District</ThemedText>
-              <ThemedText style={styles.infoValue}>Mumbai North</ThemedText>
+              <ThemedText style={styles.infoValue}>{userData.district}</ThemedText>
             </View>
           </View>
 
@@ -158,7 +273,7 @@ export default function AccountScreen() {
             </View>
             <View style={styles.infoContent}>
               <ThemedText style={styles.infoLabel}>Pincode</ThemedText>
-              <ThemedText style={styles.infoValue}>400001</ThemedText>
+              <ThemedText style={styles.infoValue}>{userData.pincode}</ThemedText>
             </View>
           </View>
 
@@ -168,7 +283,7 @@ export default function AccountScreen() {
             </View>
             <View style={styles.infoContent}>
               <ThemedText style={styles.infoLabel}>Address</ThemedText>
-              <ThemedText style={styles.infoValue}>Flat 201, Shanti Nagar</ThemedText>
+              <ThemedText style={styles.infoValue}>{userData.address}</ThemedText>
             </View>
           </View>
         </View>
@@ -312,5 +427,31 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#FECACA'
   },
-  logoutButtonText: { color: '#DC2626', fontSize: 16, fontWeight: '600', marginLeft: 4 }
+  logoutButtonText: { color: '#DC2626', fontSize: 16, fontWeight: '600', marginLeft: 4 },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#6B7280'
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#EF4444',
+    marginBottom: 16
+  },
+  retryButton: {
+    backgroundColor: '#6366F1',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 24
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600'
+  }
 });

@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen() {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -58,8 +59,10 @@ export default function LoginScreen() {
         return;
       }
 
-      // At this point the user is "authenticated" – you can store data in state/storage if needed
-      // For now, just navigate to the main app
+      // Store logged-in user's phone number for fetching data later
+      await AsyncStorage.setItem('loggedInUserPhone', phoneNumber);
+      
+      // Navigate to the main app
       router.replace('/(tabs)');
     } catch (err) {
       console.error('Unexpected login error:', err);
